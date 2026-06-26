@@ -14,6 +14,10 @@ const flashcards = document.querySelector("#flashcards");
 const sessionRecipe = document.querySelector("#sessionRecipe");
 const checklist = document.querySelector("#checklist");
 const shuffleCardsBtn = document.querySelector("#shuffleCardsBtn");
+const quizTopicSelect = document.querySelector("#quizTopicSelect");
+const quizDifficultySelect = document.querySelector("#quizDifficultySelect");
+const topicQuiz = document.querySelector("#topicQuiz");
+const newQuizBtn = document.querySelector("#newQuizBtn");
 
 const labels = {
   1: "Starting from scratch",
@@ -24,6 +28,7 @@ const labels = {
 };
 
 let currentRankedTopics = [];
+let quizSeed = 0;
 
 function splitList(value) {
   return value
@@ -182,6 +187,105 @@ function renderChecklist(topics) {
   });
 }
 
+function quizTemplates(topic, difficulty, neighbor) {
+  const sets = {
+    easy: [
+      {
+        q: `What is ${topic} in simple words?`,
+        a: `A strong answer should define ${topic}, name its purpose, and include one tiny example.`
+      },
+      {
+        q: `When would you use ${topic}?`,
+        a: `Use it when the problem matches its main job. Mention the input, the output, and why ${topic} fits.`
+      },
+      {
+        q: `What is one common mistake students make with ${topic}?`,
+        a: `A good answer names the mistake, explains why it is wrong, and gives the corrected approach.`
+      }
+    ],
+    medium: [
+      {
+        q: `Compare ${topic} with ${neighbor}.`,
+        a: `Explain how both work, where they overlap, and one situation where ${topic} is the better choice.`
+      },
+      {
+        q: `Create a small example that uses ${topic}, then solve it step by step.`,
+        a: `Your answer should show the setup, each step, and the final result without skipping the reasoning.`
+      },
+      {
+        q: `What assumptions does ${topic} depend on?`,
+        a: `List the assumptions, then explain what breaks when one assumption is not true.`
+      },
+      {
+        q: `Write a 5-line exam answer for ${topic}.`,
+        a: `Definition, purpose, method, example, and limitation. Keep it concise and exam-ready.`
+      }
+    ],
+    hard: [
+      {
+        q: `Design a tricky exam question where ${topic} seems useful but may fail.`,
+        a: `The answer should identify the trap, explain the failure mode, and propose the better method.`
+      },
+      {
+        q: `Prove or justify why ${topic} works in a typical case.`,
+        a: `Use clear reasoning: assumptions, mechanism, result, and limitation. Formal proof is optional.`
+      },
+      {
+        q: `Combine ${topic} with ${neighbor} in one solution.`,
+        a: `Explain which part each topic handles, the order of use, and how you would verify the result.`
+      },
+      {
+        q: `Give a counterexample that exposes a weakness of ${topic}.`,
+        a: `State the counterexample, show why ${topic} struggles, and name the lesson for exams.`
+      },
+      {
+        q: `Make a one-minute oral explanation of ${topic} for a viva.`,
+        a: `Start with intuition, add the exact term, give an example, and finish with a limitation.`
+      }
+    ]
+  };
+  return sets[difficulty];
+}
+
+function renderTopicOptions(topics) {
+  const selected = quizTopicSelect.value;
+  quizTopicSelect.innerHTML = "";
+  topics.forEach((topic) => {
+    const option = document.createElement("option");
+    option.value = topic;
+    option.textContent = topic;
+    quizTopicSelect.append(option);
+  });
+  if (topics.includes(selected)) {
+    quizTopicSelect.value = selected;
+  }
+}
+
+function renderTopicQuiz() {
+  const topics = currentRankedTopics.length ? currentRankedTopics : ["Core concepts"];
+  const topic = quizTopicSelect.value || topics[0];
+  const difficulty = quizDifficultySelect.value;
+  const neighbor = rotate(topics.filter((item) => item !== topic).length ? topics.filter((item) => item !== topic) : topics, quizSeed);
+  const questions = quizTemplates(topic, difficulty, neighbor);
+
+  topicQuiz.innerHTML = "";
+  questions.forEach((item, index) => {
+    const card = document.createElement("article");
+    card.className = "question-card";
+    card.innerHTML = `
+      <h3>Question ${index + 1}</h3>
+      <p>${item.q}</p>
+      <button class="answer-button" type="button">Show answer guide</button>
+      <p class="answer">${item.a}</p>
+    `;
+    card.querySelector(".answer-button").addEventListener("click", () => {
+      card.classList.toggle("revealed");
+      card.querySelector(".answer-button").textContent = card.classList.contains("revealed") ? "Hide answer guide" : "Show answer guide";
+    });
+    topicQuiz.append(card);
+  });
+}
+
 function makePlan() {
   const subject = subjectInput.value.trim() || "Your exam";
   const planTopics = getTopics().length ? getTopics() : ["Core concepts"];
@@ -217,6 +321,8 @@ function makePlan() {
   renderFlashcards(rankedTopics);
   renderRecipe(style, hours, lowConfidence);
   renderChecklist(rankedTopics);
+  renderTopicOptions(rankedTopics);
+  renderTopicQuiz();
 }
 
 confidenceInput.addEventListener("input", () => {
@@ -245,6 +351,13 @@ document.querySelector("#copyPlanBtn").addEventListener("click", async () => {
 shuffleCardsBtn.addEventListener("click", () => {
   currentRankedTopics = [...currentRankedTopics].sort(() => Math.random() - 0.5);
   renderFlashcards(currentRankedTopics);
+});
+
+quizTopicSelect.addEventListener("change", renderTopicQuiz);
+quizDifficultySelect.addEventListener("change", renderTopicQuiz);
+newQuizBtn.addEventListener("click", () => {
+  quizSeed += 1;
+  renderTopicQuiz();
 });
 
 confidenceLabel.textContent = labels[confidenceInput.value];

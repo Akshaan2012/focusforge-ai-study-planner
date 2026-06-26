@@ -398,8 +398,12 @@ textarea:focus {
 
 .extras-grid {
   display: grid;
-  grid-template-columns: 1.15fr 0.9fr 0.95fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
+}
+
+.quiz-builder-panel {
+  grid-column: 1 / -1;
 }
 
 .compact-heading {
@@ -414,7 +418,8 @@ textarea:focus {
 
 .flashcard,
 .recipe-item,
-.check-item {
+.check-item,
+.question-card {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: #fbfdfb;
@@ -436,9 +441,54 @@ textarea:focus {
 }
 
 .recipe-list,
-.checklist {
+.checklist,
+.topic-quiz {
   display: grid;
   gap: 10px;
+}
+
+.quiz-controls {
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.question-card {
+  display: grid;
+  gap: 10px;
+}
+
+.question-card h3 {
+  margin-bottom: 0;
+  font-size: 1rem;
+}
+
+.question-card p {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.answer-button {
+  width: fit-content;
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+  color: var(--ink);
+  padding: 0 12px;
+  font-weight: 900;
+}
+
+.answer {
+  display: none;
+  border-left: 4px solid var(--mint);
+  padding-left: 10px;
+}
+
+.question-card.revealed .answer {
+  display: block;
 }
 
 .check-item {
@@ -476,7 +526,8 @@ textarea:focus {
 
   .form-row,
   .day-card,
-  .flashcards {
+  .flashcards,
+  .quiz-controls {
     grid-template-columns: 1fr;
   }
 

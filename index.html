@@ -153,6 +153,31 @@
             <h2>Exam checklist</h2>
             <div id="checklist" class="checklist"></div>
           </article>
+
+          <article class="panel quiz-builder-panel">
+            <div class="panel-heading compact-heading">
+              <div>
+                <p class="overline">Topic trainer</p>
+                <h2>Practice questions</h2>
+              </div>
+              <button id="newQuizBtn" class="ghost-button" type="button">New set</button>
+            </div>
+            <div class="quiz-controls">
+              <label>
+                Topic
+                <select id="quizTopicSelect"></select>
+              </label>
+              <label>
+                Difficulty
+                <select id="quizDifficultySelect">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </label>
+            </div>
+            <div id="topicQuiz" class="topic-quiz"></div>
+          </article>
         </section>
       </section>
     </main>
