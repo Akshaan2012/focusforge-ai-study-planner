@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FocusForge AI Study Planner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <nav class="nav" aria-label="Primary">
+          <div class="brand-mark">FF</div>
+          <div>
+            <p class="overline">FocusForge</p>
+            <p class="brand-subtitle">AI study planner</p>
+          </div>
+        </nav>
+
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <p class="status-pill">Plan today. Quiz tonight. Improve tomorrow.</p>
+            <h1>Turn messy exam topics into a sharp study sprint.</h1>
+            <p class="hero-text">
+              Add your syllabus, deadline, daily study time, and confidence level.
+              FocusForge builds a balanced revision plan with practice questions,
+              breaks, and priority topics.
+            </p>
+          </div>
+
+          <form id="plannerForm" class="planner-card" aria-label="Create study plan">
+            <label>
+              Exam or subject
+              <input id="subjectInput" type="text" value="Machine Learning Midterm" required />
+            </label>
+            <label>
+              Topics
+              <textarea id="topicsInput" required>Linear regression, logistic regression, decision trees, random forests, SVM, clustering, PCA</textarea>
+            </label>
+            <div class="form-row">
+              <label>
+                Days left
+                <input id="daysInput" type="number" min="1" max="60" value="7" required />
+              </label>
+              <label>
+                Hours/day
+                <input id="hoursInput" type="number" min="1" max="12" value="2" required />
+              </label>
+            </div>
+            <label>
+              Current confidence
+              <input id="confidenceInput" type="range" min="1" max="5" value="3" />
+              <span id="confidenceLabel" class="range-label">Steady</span>
+            </label>
+            <button type="submit" class="primary-action">Generate plan</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="dashboard" aria-label="Generated study dashboard">
+        <div class="summary-strip">
+          <article>
+            <span id="totalHours">14</span>
+            <p>Total focus hours</p>
+          </article>
+          <article>
+            <span id="topicCount">7</span>
+            <p>Topics mapped</p>
+          </article>
+          <article>
+            <span id="dailyLoad">2h</span>
+            <p>Daily load</p>
+          </article>
+          <article>
+            <span id="quizCount">21</span>
+            <p>Practice questions</p>
+          </article>
+        </div>
+
+        <div class="main-grid">
+          <section class="panel plan-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="overline">Study route</p>
+                <h2 id="planHeading">7-day sprint for Machine Learning Midterm</h2>
+              </div>
+              <button id="copyPlanBtn" class="ghost-button" type="button">Copy</button>
+            </div>
+            <div id="timeline" class="timeline"></div>
+          </section>
+
+          <aside class="panel coach-panel">
+            <p class="overline">AI coach</p>
+            <h2>Priority stack</h2>
+            <div id="priorityList" class="priority-list"></div>
+
+            <div class="coach-note">
+              <h3>Tonight's rule</h3>
+              <p id="coachNote">
+                Start with active recall before rereading. If a topic feels familiar but you cannot explain it aloud, it is still weak.
+              </p>
+            </div>
+
+            <div class="quiz-box">
+              <h3>Sample quiz</h3>
+              <ol id="quizList"></ol>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
