@@ -48,6 +48,19 @@
               </label>
             </div>
             <label>
+              Weak topics
+              <input id="weakInput" type="text" value="SVM, PCA" placeholder="Optional: topics you find hardest" />
+            </label>
+            <label>
+              Study style
+              <select id="styleInput">
+                <option value="balanced">Balanced</option>
+                <option value="visual">Visual learner</option>
+                <option value="practice">Practice-heavy</option>
+                <option value="memory">Memorization</option>
+              </select>
+            </label>
+            <label>
               Current confidence
               <input id="confidenceInput" type="range" min="1" max="5" value="3" />
               <span id="confidenceLabel" class="range-label">Steady</span>
@@ -75,6 +88,10 @@
             <span id="quizCount">21</span>
             <p>Practice questions</p>
           </article>
+          <article>
+            <span id="readinessScore">68%</span>
+            <p>Readiness score</p>
+          </article>
         </div>
 
         <div class="main-grid">
@@ -101,12 +118,42 @@
               </p>
             </div>
 
+            <div class="coach-note">
+              <h3>AI diagnosis</h3>
+              <p id="diagnosisNote"></p>
+            </div>
+
             <div class="quiz-box">
               <h3>Sample quiz</h3>
               <ol id="quizList"></ol>
             </div>
           </aside>
         </div>
+
+        <section class="extras-grid" aria-label="Study tools">
+          <article class="panel">
+            <div class="panel-heading compact-heading">
+              <div>
+                <p class="overline">Recall deck</p>
+                <h2>Flashcards</h2>
+              </div>
+              <button id="shuffleCardsBtn" class="ghost-button" type="button">Shuffle</button>
+            </div>
+            <div id="flashcards" class="flashcards"></div>
+          </article>
+
+          <article class="panel">
+            <p class="overline">Focus blocks</p>
+            <h2>Session recipe</h2>
+            <div id="sessionRecipe" class="recipe-list"></div>
+          </article>
+
+          <article class="panel">
+            <p class="overline">Final pass</p>
+            <h2>Exam checklist</h2>
+            <div id="checklist" class="checklist"></div>
+          </article>
+        </section>
       </section>
     </main>
 

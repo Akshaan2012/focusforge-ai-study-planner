@@ -1,6 +1,8 @@
 const form = document.querySelector("#plannerForm");
 const subjectInput = document.querySelector("#subjectInput");
 const topicsInput = document.querySelector("#topicsInput");
+const weakInput = document.querySelector("#weakInput");
+const styleInput = document.querySelector("#styleInput");
 const daysInput = document.querySelector("#daysInput");
 const hoursInput = document.querySelector("#hoursInput");
 const confidenceInput = document.querySelector("#confidenceInput");
@@ -8,6 +10,10 @@ const confidenceLabel = document.querySelector("#confidenceLabel");
 const timeline = document.querySelector("#timeline");
 const priorityList = document.querySelector("#priorityList");
 const quizList = document.querySelector("#quizList");
+const flashcards = document.querySelector("#flashcards");
+const sessionRecipe = document.querySelector("#sessionRecipe");
+const checklist = document.querySelector("#checklist");
+const shuffleCardsBtn = document.querySelector("#shuffleCardsBtn");
 
 const labels = {
   1: "Starting from scratch",
@@ -17,71 +23,200 @@ const labels = {
   5: "Revision mode"
 };
 
-function getTopics() {
-  return topicsInput.value
+let currentRankedTopics = [];
+
+function splitList(value) {
+  return value
     .split(/,|\n/)
-    .map((topic) => topic.trim())
+    .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function getTopics() {
+  return splitList(topicsInput.value);
+}
+
+function getWeakTopics() {
+  return splitList(weakInput.value);
 }
 
 function rotate(items, index) {
   return items[index % items.length];
 }
 
-function makePlan() {
-  const subject = subjectInput.value.trim() || "Your exam";
-  const topics = getTopics();
-  const planTopics = topics.length ? topics : ["Core concepts"];
-  const days = Number(daysInput.value) || 1;
-  const hours = Number(hoursInput.value) || 1;
-  const confidence = Number(confidenceInput.value);
-  const lowConfidence = confidence <= 2;
-  const questionCount = Math.max(6, planTopics.length * (lowConfidence ? 4 : 3));
+function topicScore(topic, weakTopics, confidence, index) {
+  const normalized = topic.toLowerCase();
+  const weakMatch = weakTopics.some((weak) => {
+    const weakText = weak.toLowerCase();
+    return normalized.includes(weakText) || weakText.includes(normalized);
+  });
+  const uncertainty = 6 - confidence;
+  return 58 + uncertainty * 7 + (weakMatch ? 30 : 0) + Math.max(0, 9 - index);
+}
 
-  document.querySelector("#totalHours").textContent = days * hours;
-  document.querySelector("#topicCount").textContent = planTopics.length;
-  document.querySelector("#dailyLoad").textContent = `${hours}h`;
-  document.querySelector("#quizCount").textContent = questionCount;
-  document.querySelector("#planHeading").textContent = `${days}-day sprint for ${subject}`;
-  document.querySelector("#coachNote").textContent = lowConfidence
-    ? "Use the first pass to build clarity. Keep notes tiny, then test yourself immediately."
-    : "Spend less time rereading and more time proving what you know under light pressure.";
+function methodFor(style, confidence, day) {
+  if (day % 4 === 0) return "Timed mixed quiz";
+  if (style === "visual") return "Diagram map";
+  if (style === "practice") return "Problem set";
+  if (style === "memory") return "Flashcard drill";
+  return confidence <= 2 ? "Guided notes + recall" : "Active recall";
+}
 
+function progressKey() {
+  return `focusForgeProgress:${subjectInput.value.trim() || "default"}`;
+}
+
+function loadProgress() {
+  return JSON.parse(localStorage.getItem(progressKey()) || "{}");
+}
+
+function saveProgress(day, checked) {
+  const progress = loadProgress();
+  progress[day] = checked;
+  localStorage.setItem(progressKey(), JSON.stringify(progress));
+}
+
+function renderTimeline(days, hours, rankedTopics, style, confidence) {
+  const progress = loadProgress();
   timeline.innerHTML = "";
+
   for (let day = 1; day <= days; day += 1) {
-    const primary = rotate(planTopics, day - 1);
-    const secondary = rotate(planTopics, day);
+    const primary = rotate(rankedTopics, day - 1);
+    const secondary = rotate(rankedTopics, day);
     const mode = day === days ? "Final recall run" : day % 3 === 0 ? "Mixed practice" : "Deep focus";
+    const method = methodFor(style, confidence, day);
     const card = document.createElement("article");
-    card.className = "day-card";
+    card.className = `day-card${progress[day] ? " completed" : ""}`;
     card.innerHTML = `
+      <input class="done-check" type="checkbox" aria-label="Mark day ${day} complete" ${progress[day] ? "checked" : ""}>
       <div class="day-number">${day}</div>
       <div>
         <h3>${mode}: ${primary}</h3>
-        <p>Review ${primary}, connect it with ${secondary}, then write a 5-line explanation without notes.</p>
+        <p>${method}: connect ${primary} with ${secondary}, then explain it without notes and answer two exam-style questions.</p>
       </div>
       <span class="time-chip">${hours}h</span>
     `;
+    card.querySelector(".done-check").addEventListener("change", (event) => {
+      card.classList.toggle("completed", event.target.checked);
+      saveProgress(day, event.target.checked);
+    });
     timeline.append(card);
   }
+}
 
+function renderPriorities(rankedTopics, weakTopics, confidence) {
   priorityList.innerHTML = "";
-  planTopics.slice(0, 5).forEach((topic, index) => {
+  rankedTopics.slice(0, 5).forEach((topic, index) => {
     const item = document.createElement("div");
     item.className = "priority-item";
     item.innerHTML = `
       <span class="priority-dot"></span>
-      <strong>${index + 1}. ${topic}</strong>
+      <div>
+        <strong>${index + 1}. ${topic}</strong>
+        <small>${topicScore(topic, weakTopics, confidence, index)} priority score</small>
+      </div>
     `;
     priorityList.append(item);
   });
+}
 
+function renderQuiz(topics) {
   quizList.innerHTML = "";
-  planTopics.slice(0, 3).forEach((topic) => {
+  topics.slice(0, 4).forEach((topic) => {
     const question = document.createElement("li");
-    question.textContent = `Explain ${topic} with one example and one common mistake.`;
+    question.textContent = `Explain ${topic} with one example, one formula or rule, and one common mistake.`;
     quizList.append(question);
   });
+}
+
+function renderFlashcards(topics) {
+  flashcards.innerHTML = "";
+  topics.slice(0, 6).forEach((topic, index) => {
+    const card = document.createElement("article");
+    card.className = "flashcard";
+    card.innerHTML = `
+      <strong>${topic}</strong>
+      <p>Define it, compare it with ${rotate(topics, index + 1)}, then name one exam trap.</p>
+    `;
+    flashcards.append(card);
+  });
+}
+
+function renderRecipe(style, hours, lowConfidence) {
+  const coreAction = style === "practice"
+    ? "solve questions first, then review gaps"
+    : style === "visual"
+      ? "draw a concept map before reading"
+      : style === "memory"
+        ? "drill cards in short spaced rounds"
+        : "study one topic and immediately recall it";
+  const recipes = [
+    ["Warm-up", "10 min: brain dump everything you remember before opening notes."],
+    ["Core block", `${Math.max(30, hours * 25)} min: ${coreAction}.`],
+    ["Pressure test", `${lowConfidence ? "15" : "25"} min: closed-book quiz, mark misses, repeat tomorrow.`]
+  ];
+
+  sessionRecipe.innerHTML = "";
+  recipes.forEach(([title, text]) => {
+    const item = document.createElement("div");
+    item.className = "recipe-item";
+    item.innerHTML = `<strong>${title}</strong><p>${text}</p>`;
+    sessionRecipe.append(item);
+  });
+}
+
+function renderChecklist(topics) {
+  const checks = [
+    `Explain ${topics[0]} in under 60 seconds`,
+    "Redo every missed quiz question once",
+    "Write formulas and definitions from memory",
+    "Pack materials and set a sleep cutoff"
+  ];
+
+  checklist.innerHTML = "";
+  checks.forEach((text) => {
+    const label = document.createElement("label");
+    label.className = "check-item";
+    label.innerHTML = `<input type="checkbox"> <span>${text}</span>`;
+    checklist.append(label);
+  });
+}
+
+function makePlan() {
+  const subject = subjectInput.value.trim() || "Your exam";
+  const planTopics = getTopics().length ? getTopics() : ["Core concepts"];
+  const weakTopics = getWeakTopics();
+  const days = Number(daysInput.value) || 1;
+  const hours = Number(hoursInput.value) || 1;
+  const confidence = Number(confidenceInput.value);
+  const style = styleInput.value;
+  const lowConfidence = confidence <= 2;
+  const rankedTopics = [...planTopics].sort((a, b) => {
+    return topicScore(b, weakTopics, confidence, planTopics.indexOf(b)) - topicScore(a, weakTopics, confidence, planTopics.indexOf(a));
+  });
+  currentRankedTopics = rankedTopics;
+  const questionCount = Math.max(8, rankedTopics.length * (lowConfidence ? 5 : 4));
+  const readiness = Math.min(96, Math.max(24, Math.round(confidence * 16 + Math.min(days * hours, 24) + Math.max(0, rankedTopics.length - weakTopics.length) * 2)));
+
+  document.querySelector("#totalHours").textContent = days * hours;
+  document.querySelector("#topicCount").textContent = rankedTopics.length;
+  document.querySelector("#dailyLoad").textContent = `${hours}h`;
+  document.querySelector("#quizCount").textContent = questionCount;
+  document.querySelector("#readinessScore").textContent = `${readiness}%`;
+  document.querySelector("#planHeading").textContent = `${days}-day sprint for ${subject}`;
+  document.querySelector("#coachNote").textContent = lowConfidence
+    ? "Use the first pass to build clarity. Keep notes tiny, then test yourself immediately."
+    : "Spend less time rereading and more time proving what you know under light pressure.";
+  document.querySelector("#diagnosisNote").textContent = weakTopics.length
+    ? `I weighted ${weakTopics.join(", ")} higher and placed them earlier with extra recall loops.`
+    : "I ranked topics by order, time pressure, and confidence. Add weak topics for a sharper plan.";
+
+  renderTimeline(days, hours, rankedTopics, style, confidence);
+  renderPriorities(rankedTopics, weakTopics, confidence);
+  renderQuiz(rankedTopics);
+  renderFlashcards(rankedTopics);
+  renderRecipe(style, hours, lowConfidence);
+  renderChecklist(rankedTopics);
 }
 
 confidenceInput.addEventListener("input", () => {
@@ -95,7 +230,7 @@ form.addEventListener("submit", (event) => {
 });
 
 document.querySelector("#copyPlanBtn").addEventListener("click", async () => {
-  const subject = subjectInput.value.trim();
+  const subject = subjectInput.value.trim() || "Study";
   const rows = [...document.querySelectorAll(".day-card")]
     .map((card) => card.innerText.replace(/\n/g, " - "))
     .join("\n");
@@ -105,6 +240,11 @@ document.querySelector("#copyPlanBtn").addEventListener("click", async () => {
   setTimeout(() => {
     document.querySelector("#copyPlanBtn").textContent = "Copy";
   }, 1200);
+});
+
+shuffleCardsBtn.addEventListener("click", () => {
+  currentRankedTopics = [...currentRankedTopics].sort(() => Math.random() - 0.5);
+  renderFlashcards(currentRankedTopics);
 });
 
 confidenceLabel.textContent = labels[confidenceInput.value];
