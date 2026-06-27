@@ -153,11 +153,11 @@ input:focus, textarea:focus, select:focus, button:focus-visible { border-color: 
 .timeline { display: grid; }
 .day-card {
   display: grid;
-  grid-template-columns: auto 42px minmax(0, 1fr) auto;
+  grid-template-columns: auto 42px minmax(0, 1fr) min-content;
   gap: 13px;
   align-items: center;
   border-top: 1px solid var(--soft-line);
-  padding: 14px 2px;
+  padding: 14px 8px 14px 2px;
 }
 .day-card:last-child { border-bottom: 1px solid var(--soft-line); }
 .day-card.completed { background: #f2f3ed; }

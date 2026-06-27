@@ -46,10 +46,16 @@ function showToast(message) {
 }
 
 function splitList(value) {
+  const seen = new Set();
   return value
     .split(/,|\n/)
     .map((item) => item.trim())
-    .filter(Boolean);
+    .filter((item) => {
+      const key = item.toLowerCase();
+      if (!item || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 }
 
 function getTopics() {
@@ -106,12 +112,27 @@ function updateProgress() {
 function renderTimeline(days, hours, rankedTopics, style, confidence) {
   const progress = loadProgress();
   timeline.innerHTML = "";
+  const singleTopicTasks = [
+    ["Build the foundation", "Define the idea from memory, then check your notes and correct every gap."],
+    ["Map the concept", "Draw the process, key terms, and relationships on one page without copying."],
+    ["Work an example", "Solve one representative example step by step and explain why each step works."],
+    ["Find the traps", "List three common mistakes, then rewrite each one as a correct exam answer."],
+    ["Teach it aloud", "Explain the topic in two minutes, record the weak spots, and repeat without notes."],
+    ["Practice under pressure", "Answer three timed questions, review misses, and retry only the missed parts."],
+    ["Final recall run", "Write everything you know from memory, then finish with one exam-style response."]
+  ];
 
   for (let day = 1; day <= days; day += 1) {
     const primary = rotate(rankedTopics, day - 1);
-    const secondary = rotate(rankedTopics, day);
-    const mode = day === days ? "Final recall run" : day % 3 === 0 ? "Mixed practice" : "Deep focus";
+    const secondary = rankedTopics.length > 1 ? rotate(rankedTopics, day) : null;
+    const singleTask = rotate(singleTopicTasks, day - 1);
+    const mode = rankedTopics.length === 1
+      ? singleTask[0]
+      : day === days ? "Final recall run" : day % 3 === 0 ? "Mixed practice" : "Deep focus";
     const method = methodFor(style, confidence, day);
+    const taskText = rankedTopics.length === 1
+      ? `${method}: ${singleTask[1]}`
+      : `${method}: connect ${primary} with ${secondary}, then explain it without notes and answer two exam-style questions.`;
     const card = document.createElement("article");
     card.className = `day-card${progress[day] ? " completed" : ""}`;
     card.innerHTML = `
@@ -119,7 +140,7 @@ function renderTimeline(days, hours, rankedTopics, style, confidence) {
       <div class="day-number">${day}</div>
       <div>
         <h3>${mode}: ${primary}</h3>
-        <p>${method}: connect ${primary} with ${secondary}, then explain it without notes and answer two exam-style questions.</p>
+        <p>${taskText}</p>
       </div>
       <span class="time-chip">${hours}h</span>
     `;
@@ -151,9 +172,17 @@ function renderPriorities(rankedTopics, weakTopics, confidence) {
 
 function renderQuiz(topics) {
   quizList.innerHTML = "";
-  topics.slice(0, 4).forEach((topic) => {
+  const prompts = topics.length === 1
+    ? [
+        `Define ${topics[0]} in your own words and give one concrete example.`,
+        `Draw or describe the main process behind ${topics[0]}.`,
+        `Name two common mistakes students make with ${topics[0]}.`,
+        `Write a five-mark exam answer about ${topics[0]} without notes.`
+      ]
+    : topics.slice(0, 4).map((topic) => `Explain ${topic} with one example, one formula or rule, and one common mistake.`);
+  prompts.forEach((prompt) => {
     const question = document.createElement("li");
-    question.textContent = `Explain ${topic} with one example, one formula or rule, and one common mistake.`;
+    question.textContent = prompt;
     quizList.append(question);
   });
 }
@@ -313,7 +342,14 @@ function renderTopicQuiz() {
 function makePlan() {
   const subject = subjectInput.value.trim() || "Your exam";
   const planTopics = getTopics().length ? getTopics() : ["Core concepts"];
-  const weakTopics = getWeakTopics();
+  const enteredWeakTopics = getWeakTopics();
+  const weakTopics = enteredWeakTopics.filter((weak) => {
+    const weakText = weak.toLowerCase();
+    return planTopics.some((topic) => {
+      const topicText = topic.toLowerCase();
+      return topicText.includes(weakText) || weakText.includes(topicText);
+    });
+  });
   const days = Number(daysInput.value) || 1;
   const hours = Number(hoursInput.value) || 1;
   const confidence = Number(confidenceInput.value);
@@ -337,7 +373,9 @@ function makePlan() {
     : "Spend less time rereading and more time proving what you know under light pressure.";
   document.querySelector("#diagnosisNote").textContent = weakTopics.length
     ? `I weighted ${weakTopics.join(", ")} higher and placed them earlier with extra recall loops.`
-    : "I ranked topics by order, time pressure, and confidence. Add weak topics for a sharper plan.";
+    : enteredWeakTopics.length
+      ? "The weak-topic entries did not match this syllabus, so I left them out of the ranking."
+      : "I ranked topics by order, time pressure, and confidence. Add weak topics for a sharper plan.";
 
   renderTimeline(days, hours, rankedTopics, style, confidence);
   renderPriorities(rankedTopics, weakTopics, confidence);
