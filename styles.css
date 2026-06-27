@@ -53,6 +53,18 @@ h1, h2, h3, p { margin-top: 0; }
   text-transform: uppercase;
 }
 .brand-subtitle { margin-top: 2px; color: var(--muted); font-size: .76rem; }
+.nav-actions { display: flex; gap: 8px; margin-left: auto; }
+.nav-button {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  padding: 0 12px;
+  font-size: .76rem;
+  font-weight: 650;
+}
+.nav-button:hover { border-color: #aaa49a; background: var(--paper); }
 
 .hero-grid {
   display: grid;
@@ -124,7 +136,7 @@ input:focus, textarea:focus, select:focus, button:focus-visible { border-color: 
 .dashboard { display: grid; gap: 20px; scroll-margin-top: 16px; }
 .summary-strip {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   border-block: 1px solid var(--line);
 }
 .summary-strip article { min-width: 0; padding: 16px 18px; border-right: 1px solid var(--line); }
@@ -135,6 +147,7 @@ input:focus, textarea:focus, select:focus, button:focus-visible { border-color: 
 .main-grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
 .panel { border-radius: 9px; padding: 22px; }
 .panel-heading { display: flex; align-items: start; justify-content: space-between; gap: 16px; margin-bottom: 19px; }
+.heading-actions { display: flex; gap: 7px; }
 .panel h2 { margin: 4px 0 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.35rem, 2.5vw, 1.8rem); font-weight: 400; line-height: 1.15; letter-spacing: -.025em; }
 
 .timeline { display: grid; }
@@ -190,6 +203,46 @@ input:focus, textarea:focus, select:focus, button:focus-visible { border-color: 
 .question-card.revealed .answer { display: block; }
 .check-item { display: flex; align-items: center; gap: 9px; color: var(--muted); font: 600 .81rem/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0; text-transform: none; }
 
+.timer-panel { display: flex; flex-direction: column; }
+.timer-display {
+  margin: 24px 0 20px;
+  font: 500 clamp(3rem, 5vw, 4.6rem)/1 ui-monospace, "SFMono-Regular", Consolas, monospace;
+  letter-spacing: -.08em;
+}
+.timer-presets, .timer-actions { display: flex; gap: 8px; }
+.timer-presets { margin-bottom: 18px; }
+.timer-preset {
+  min-height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  padding: 0 11px;
+  font-size: .72rem;
+  font-weight: 650;
+}
+.timer-preset.active { border-color: var(--clay); background: #f9e9e3; color: var(--clay-dark); }
+.timer-actions { margin-top: auto; }
+.timer-actions .primary-action { flex: 1; padding: 0 14px; }
+
+.toast {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 10;
+  max-width: min(360px, calc(100% - 32px));
+  border-radius: 7px;
+  background: var(--code);
+  color: white;
+  padding: 12px 15px;
+  font-size: .82rem;
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+}
+.toast.visible { opacity: 1; transform: translateY(0); }
+
 @media (max-width: 940px) {
   .hero-grid, .main-grid, .extras-grid { grid-template-columns: 1fr; }
   .hero-copy { max-width: 620px; padding-top: 0; }
@@ -201,6 +254,8 @@ input:focus, textarea:focus, select:focus, button:focus-visible { border-color: 
   html { font-size: 16px; }
   .app-shell { width: min(100% - 20px, 1240px); }
   .nav { min-height: 58px; }
+  .brand-subtitle { display: none; }
+  .nav-button { padding: 0 9px; }
   .hero-grid { gap: 32px; padding-top: 36px; }
   h1 { font-size: clamp(2.6rem, 13vw, 3.6rem); }
   .planner-card, .panel { padding: 17px; }
@@ -215,3 +270,14 @@ input:focus, textarea:focus, select:focus, button:focus-visible { border-color: 
   .time-chip { width: fit-content; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+@media print {
+  body { background: white; }
+  .hero, .nav-actions, .ghost-button, .timer-panel, .quiz-builder-panel { display: none !important; }
+  .app-shell { width: 100%; padding: 0; }
+  .dashboard { gap: 14px; }
+  .summary-strip, .panel { break-inside: avoid; }
+  .coach-panel { position: static; background: white; color: var(--ink); border-color: var(--line); }
+  .coach-panel h2, .coach-panel .overline { color: var(--ink); }
+  .coach-note p, .quiz-box li, .priority-item small { color: var(--muted); }
+}

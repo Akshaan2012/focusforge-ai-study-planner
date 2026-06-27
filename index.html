@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FocusForge AI Study Planner</title>
-    <link rel="stylesheet" href="styles.css?v=20260627-5" />
+    <link rel="stylesheet" href="styles.css?v=20260627-6" />
   </head>
   <body>
     <main class="app-shell">
@@ -14,6 +14,10 @@
           <div>
             <p class="overline">FocusForge</p>
             <p class="brand-subtitle">AI study planner</p>
+          </div>
+          <div class="nav-actions">
+            <button id="savePlanBtn" class="nav-button" type="button">Save plan</button>
+            <button id="printPlanBtn" class="nav-button" type="button">Print</button>
           </div>
         </nav>
 
@@ -91,6 +95,10 @@
             <span id="readinessScore">68%</span>
             <p>Readiness score</p>
           </article>
+          <article>
+            <span id="progressScore">0%</span>
+            <p>Plan completed</p>
+          </article>
         </div>
 
         <div class="main-grid">
@@ -100,7 +108,10 @@
                 <p class="overline">Study route</p>
                 <h2 id="planHeading">7-day sprint for Machine Learning Midterm</h2>
               </div>
-              <button id="copyPlanBtn" class="ghost-button" type="button">Copy</button>
+              <div class="heading-actions">
+                <button id="resetProgressBtn" class="ghost-button" type="button">Reset</button>
+                <button id="copyPlanBtn" class="ghost-button" type="button">Copy</button>
+              </div>
             </div>
             <div id="timeline" class="timeline"></div>
           </section>
@@ -153,6 +164,21 @@
             <div id="checklist" class="checklist"></div>
           </article>
 
+          <article class="panel timer-panel">
+            <p class="overline">Deep work</p>
+            <h2>Focus timer</h2>
+            <p id="timerDisplay" class="timer-display" aria-live="polite">25:00</p>
+            <div class="timer-presets" aria-label="Timer length">
+              <button class="timer-preset active" type="button" data-minutes="25">25 min</button>
+              <button class="timer-preset" type="button" data-minutes="45">45 min</button>
+              <button class="timer-preset" type="button" data-minutes="60">60 min</button>
+            </div>
+            <div class="timer-actions">
+              <button id="timerToggleBtn" class="primary-action" type="button">Start focus</button>
+              <button id="timerResetBtn" class="ghost-button" type="button">Reset</button>
+            </div>
+          </article>
+
           <article class="panel quiz-builder-panel">
             <div class="panel-heading compact-heading">
               <div>
@@ -180,6 +206,8 @@
         </section>
       </section>
     </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script src="script.js"></script>
   </body>

@@ -18,6 +18,11 @@ const quizTopicSelect = document.querySelector("#quizTopicSelect");
 const quizDifficultySelect = document.querySelector("#quizDifficultySelect");
 const topicQuiz = document.querySelector("#topicQuiz");
 const newQuizBtn = document.querySelector("#newQuizBtn");
+const progressScore = document.querySelector("#progressScore");
+const toast = document.querySelector("#toast");
+const timerDisplay = document.querySelector("#timerDisplay");
+const timerToggleBtn = document.querySelector("#timerToggleBtn");
+const timerResetBtn = document.querySelector("#timerResetBtn");
 
 const labels = {
   1: "Starting from scratch",
@@ -29,6 +34,16 @@ const labels = {
 
 let currentRankedTopics = [];
 let quizSeed = 0;
+let timerSeconds = 25 * 60;
+let timerDuration = timerSeconds;
+let timerInterval = null;
+
+function showToast(message) {
+  toast.textContent = message;
+  toast.classList.add("visible");
+  window.clearTimeout(showToast.timeout);
+  showToast.timeout = window.setTimeout(() => toast.classList.remove("visible"), 2200);
+}
 
 function splitList(value) {
   return value
@@ -81,6 +96,13 @@ function saveProgress(day, checked) {
   localStorage.setItem(progressKey(), JSON.stringify(progress));
 }
 
+function updateProgress() {
+  const checks = [...document.querySelectorAll(".day-card .done-check")];
+  const completed = checks.filter((check) => check.checked).length;
+  const percent = checks.length ? Math.round((completed / checks.length) * 100) : 0;
+  progressScore.textContent = `${percent}%`;
+}
+
 function renderTimeline(days, hours, rankedTopics, style, confidence) {
   const progress = loadProgress();
   timeline.innerHTML = "";
@@ -104,9 +126,11 @@ function renderTimeline(days, hours, rankedTopics, style, confidence) {
     card.querySelector(".done-check").addEventListener("change", (event) => {
       card.classList.toggle("completed", event.target.checked);
       saveProgress(day, event.target.checked);
+      updateProgress();
     });
     timeline.append(card);
   }
+  updateProgress();
 }
 
 function renderPriorities(rankedTopics, weakTopics, confidence) {
@@ -325,6 +349,46 @@ function makePlan() {
   renderTopicQuiz();
 }
 
+function planData() {
+  return {
+    subject: subjectInput.value,
+    topics: topicsInput.value,
+    weak: weakInput.value,
+    style: styleInput.value,
+    days: daysInput.value,
+    hours: hoursInput.value,
+    confidence: confidenceInput.value
+  };
+}
+
+function restorePlan() {
+  const saved = JSON.parse(localStorage.getItem("focusForgeSavedPlan") || "null");
+  if (!saved) return false;
+  subjectInput.value = saved.subject || subjectInput.value;
+  topicsInput.value = saved.topics || topicsInput.value;
+  weakInput.value = saved.weak || "";
+  styleInput.value = saved.style || "balanced";
+  daysInput.value = saved.days || 7;
+  hoursInput.value = saved.hours || 2;
+  confidenceInput.value = saved.confidence || 3;
+  confidenceLabel.textContent = labels[confidenceInput.value];
+  return true;
+}
+
+function renderTimer() {
+  const minutes = Math.floor(timerSeconds / 60).toString().padStart(2, "0");
+  const seconds = (timerSeconds % 60).toString().padStart(2, "0");
+  timerDisplay.textContent = `${minutes}:${seconds}`;
+  document.title = timerInterval ? `${minutes}:${seconds} · FocusForge` : "FocusForge AI Study Planner";
+}
+
+function stopTimer() {
+  window.clearInterval(timerInterval);
+  timerInterval = null;
+  timerToggleBtn.textContent = "Start focus";
+  renderTimer();
+}
+
 confidenceInput.addEventListener("input", () => {
   confidenceLabel.textContent = labels[confidenceInput.value];
 });
@@ -333,6 +397,23 @@ form.addEventListener("submit", (event) => {
   event.preventDefault();
   makePlan();
   document.querySelector(".dashboard").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+document.querySelector("#savePlanBtn").addEventListener("click", () => {
+  localStorage.setItem("focusForgeSavedPlan", JSON.stringify(planData()));
+  showToast("Plan saved on this device");
+});
+
+document.querySelector("#printPlanBtn").addEventListener("click", () => window.print());
+
+document.querySelector("#resetProgressBtn").addEventListener("click", () => {
+  localStorage.removeItem(progressKey());
+  document.querySelectorAll(".day-card .done-check").forEach((check) => {
+    check.checked = false;
+    check.closest(".day-card").classList.remove("completed");
+  });
+  updateProgress();
+  showToast("Progress reset");
 });
 
 document.querySelector("#copyPlanBtn").addEventListener("click", async () => {
@@ -360,5 +441,42 @@ newQuizBtn.addEventListener("click", () => {
   renderTopicQuiz();
 });
 
+document.querySelectorAll(".timer-preset").forEach((button) => {
+  button.addEventListener("click", () => {
+    stopTimer();
+    document.querySelectorAll(".timer-preset").forEach((item) => item.classList.remove("active"));
+    button.classList.add("active");
+    timerDuration = Number(button.dataset.minutes) * 60;
+    timerSeconds = timerDuration;
+    renderTimer();
+  });
+});
+
+timerToggleBtn.addEventListener("click", () => {
+  if (timerInterval) {
+    stopTimer();
+    return;
+  }
+  timerToggleBtn.textContent = "Pause";
+  timerInterval = window.setInterval(() => {
+    timerSeconds -= 1;
+    renderTimer();
+    if (timerSeconds <= 0) {
+      stopTimer();
+      timerSeconds = timerDuration;
+      renderTimer();
+      showToast("Focus session complete");
+    }
+  }, 1000);
+});
+
+timerResetBtn.addEventListener("click", () => {
+  stopTimer();
+  timerSeconds = timerDuration;
+  renderTimer();
+});
+
 confidenceLabel.textContent = labels[confidenceInput.value];
+restorePlan();
 makePlan();
+renderTimer();
