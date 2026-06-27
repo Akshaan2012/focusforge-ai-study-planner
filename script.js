@@ -375,7 +375,9 @@ function makePlan() {
     ? `I weighted ${weakTopics.join(", ")} higher and placed them earlier with extra recall loops.`
     : enteredWeakTopics.length
       ? "The weak-topic entries did not match this syllabus, so I left them out of the ranking."
-      : "I ranked topics by order, time pressure, and confidence. Add weak topics for a sharper plan.";
+      : rankedTopics.length === 1
+        ? `${rankedTopics[0]} is the only topic in this plan, so I varied the practice method each day instead of ranking topics.`
+        : `Priority order: ${rankedTopics.slice(0, 5).join(" → ")}. I ranked these using syllabus order, time pressure, and confidence.`;
 
   renderTimeline(days, hours, rankedTopics, style, confidence);
   renderPriorities(rankedTopics, weakTopics, confidence);
