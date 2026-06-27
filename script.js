@@ -254,12 +254,26 @@ function quizTemplates(topic, difficulty, neighbor) {
       {
         q: `What is one common mistake students make with ${topic}?`,
         a: `A good answer names the mistake, explains why it is wrong, and gives the corrected approach.`
+      },
+      {
+        q: `List the three most important facts to remember about ${topic}.`,
+        a: `Choose facts that cover what it is, how it works, and when it matters.`
+      },
+      {
+        q: `Give a real-world example of ${topic}.`,
+        a: `Name the situation, identify where ${topic} appears, and explain the connection in one or two sentences.`
+      },
+      {
+        q: `Draw a simple diagram or flow for ${topic}. What does each part show?`,
+        a: `Use a small number of labelled parts and explain how information or steps move between them.`
       }
     ],
     medium: [
       {
-        q: `Compare ${topic} with ${neighbor}.`,
-        a: `Explain how both work, where they overlap, and one situation where ${topic} is the better choice.`
+        q: neighbor ? `Compare ${topic} with ${neighbor}.` : `Compare two important types or parts of ${topic}.`,
+        a: neighbor
+          ? `Explain how both work, where they overlap, and one situation where ${topic} is the better choice.`
+          : `Choose two meaningful types or parts, then explain one similarity, one difference, and why the distinction matters.`
       },
       {
         q: `Create a small example that uses ${topic}, then solve it step by step.`,
@@ -272,6 +286,22 @@ function quizTemplates(topic, difficulty, neighbor) {
       {
         q: `Write a 5-line exam answer for ${topic}.`,
         a: `Definition, purpose, method, example, and limitation. Keep it concise and exam-ready.`
+      },
+      {
+        q: `A student gives an incomplete explanation of ${topic}. What key details are they likely to miss?`,
+        a: `Identify two or three essential details, explain why each matters, and show how they complete the answer.`
+      },
+      {
+        q: `How would changing one important condition affect ${topic}?`,
+        a: `State the condition, predict the change, and justify the result using the underlying concept.`
+      },
+      {
+        q: `Turn ${topic} into a labelled diagram, table, or sequence.`,
+        a: `Choose the clearest representation and label every part needed to reconstruct the idea without notes.`
+      },
+      {
+        q: `Write one multiple-choice question about ${topic}, including three plausible wrong answers.`,
+        a: `Make the correct answer unambiguous and ensure each distractor reflects a realistic misconception.`
       }
     ],
     hard: [
@@ -294,10 +324,24 @@ function quizTemplates(topic, difficulty, neighbor) {
       {
         q: `Make a one-minute oral explanation of ${topic} for a viva.`,
         a: `Start with intuition, add the exact term, give an example, and finish with a limitation.`
+      },
+      {
+        q: `Evaluate the claim: “Understanding ${topic} is enough to solve every related problem.”`,
+        a: `Take a position, support it with a valid case, then identify the boundary or exception that limits the claim.`
+      },
+      {
+        q: `Design a marking rubric for a 10-mark question on ${topic}.`,
+        a: `Allocate marks across definition, reasoning, application, accuracy, and evaluation.`
+      },
+      {
+        q: `Connect ${topic} to a broader principle from the subject.`,
+        a: `Name the broader principle, explain the connection, and show how it improves problem-solving or prediction.`
       }
     ]
   };
-  return sets[difficulty];
+  const bank = sets[difficulty];
+  const count = difficulty === "hard" ? 5 : 4;
+  return Array.from({ length: count }, (_, index) => rotate(bank, quizSeed + index));
 }
 
 function renderTopicOptions(topics) {
@@ -318,7 +362,8 @@ function renderTopicQuiz() {
   const topics = currentRankedTopics.length ? currentRankedTopics : ["Core concepts"];
   const topic = quizTopicSelect.value || topics[0];
   const difficulty = quizDifficultySelect.value;
-  const neighbor = rotate(topics.filter((item) => item !== topic).length ? topics.filter((item) => item !== topic) : topics, quizSeed);
+  const otherTopics = topics.filter((item) => item !== topic);
+  const neighbor = otherTopics.length ? rotate(otherTopics, quizSeed) : null;
   const questions = quizTemplates(topic, difficulty, neighbor);
 
   topicQuiz.innerHTML = "";
