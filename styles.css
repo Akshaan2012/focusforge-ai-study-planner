@@ -13,7 +13,7 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; font-size: 18px; }
 body {
   margin: 0;
   min-height: 100vh;
@@ -98,7 +98,7 @@ label {
   display: grid;
   gap: 6px;
   color: #5b5750;
-  font: 650 .69rem/1.2 ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font: 650 .76rem/1.25 ui-monospace, "SFMono-Regular", Consolas, monospace;
   text-transform: lowercase;
 }
 input, textarea, select {
@@ -108,12 +108,13 @@ input, textarea, select {
   background: white;
   color: var(--ink);
   padding: 10px 11px;
+  font-size: .94rem;
   outline: none;
 }
 textarea { min-height: 82px; resize: vertical; line-height: 1.45; }
 input:focus, textarea:focus, select:focus, button:focus-visible { border-color: var(--clay); box-shadow: 0 0 0 3px rgba(198,95,61,.13); outline: none; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.range-label { color: var(--clay-dark); font: 650 .76rem/1.2 ui-sans-serif, system-ui, sans-serif; text-transform: none; }
+.range-label { color: var(--clay-dark); font: 650 .84rem/1.2 ui-sans-serif, system-ui, sans-serif; text-transform: none; }
 .primary-action, .ghost-button { min-height: 40px; border-radius: 6px; font-weight: 650; }
 .primary-action { border: 1px solid var(--code); background: var(--code); color: white; }
 .primary-action:hover { border-color: var(--clay-dark); background: var(--clay-dark); }
@@ -154,8 +155,8 @@ input:focus, textarea:focus, select:focus, button:focus-visible { border-color: 
   text-align: center;
 }
 .day-number::before { content: "d"; color: #a29c92; }
-.day-card h3 { margin-bottom: 4px; font-size: .91rem; font-weight: 650; }
-.day-card p { margin: 0; color: var(--muted); font-size: .82rem; line-height: 1.47; }
+.day-card h3 { margin-bottom: 4px; font-size: 1rem; font-weight: 650; }
+.day-card p { margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.5; }
 .time-chip { color: var(--sage); font: 700 .72rem/1 ui-monospace, "SFMono-Regular", Consolas, monospace; white-space: nowrap; }
 
 .coach-panel { position: sticky; top: 16px; background: var(--code); color: #f7f4ed; border-color: var(--code); }
@@ -169,7 +170,7 @@ input:focus, textarea:focus, select:focus, button:focus-visible { border-color: 
 .coach-note, .quiz-box { border-left: 2px solid #776f64; padding-left: 12px; }
 .coach-note + .coach-note, .quiz-box { margin-top: 19px; }
 .coach-note h3, .quiz-box h3 { margin-bottom: 5px; font: 650 .74rem/1.2 ui-monospace, "SFMono-Regular", Consolas, monospace; }
-.coach-note p, .quiz-box li { color: #c6c2ba; font-size: .8rem; line-height: 1.5; }
+.coach-note p, .quiz-box li { color: #c6c2ba; font-size: .88rem; line-height: 1.52; }
 .quiz-box ol { margin: 0; padding-left: 18px; }
 
 .extras-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
@@ -179,7 +180,7 @@ input:focus, textarea:focus, select:focus, button:focus-visible { border-color: 
 .flashcard, .recipe-item, .check-item, .question-card { border-top: 1px solid var(--soft-line); padding: 13px 0; }
 .flashcard:last-child, .recipe-item:last-child, .check-item:last-child, .question-card:last-child { border-bottom: 1px solid var(--soft-line); }
 .flashcard strong, .recipe-item strong { display: block; margin-bottom: 4px; font-size: .88rem; }
-.flashcard p, .recipe-item p, .question-card p { margin: 0; color: var(--muted); font-size: .81rem; line-height: 1.48; }
+.flashcard p, .recipe-item p, .question-card p { margin: 0; color: var(--muted); font-size: .89rem; line-height: 1.5; }
 .quiz-controls { display: grid; grid-template-columns: 1fr 180px; gap: 13px; margin-bottom: 15px; }
 .question-card { display: grid; gap: 9px; }
 .question-card h3 { margin: 0; color: var(--clay-dark); font: 650 .75rem/1.2 ui-monospace, "SFMono-Regular", Consolas, monospace; }
@@ -197,6 +198,7 @@ input:focus, textarea:focus, select:focus, button:focus-visible { border-color: 
   .summary-strip { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 620px) {
+  html { font-size: 16px; }
   .app-shell { width: min(100% - 20px, 1240px); }
   .nav { min-height: 58px; }
   .hero-grid { gap: 32px; padding-top: 36px; }
